@@ -7,9 +7,9 @@ DataFormat = {
     "TimeRange": [],    # 起止时间 str eg:['2016-10-01', '2016-11-30']
     "TimeFitness": [],  # 时间粒度 int 单位为min
     "Node": {
-        "TrafficNode": [],  # with shape [time_slots, num-of-node] eg:(1440,256) 
-        "TrafficMonthlyInteraction": [],
-        "StationInfo": [],  # list eg:['0', 0, 34.210542575000005, 108.91390095, 'grid_0']
+        "TrafficNode": [],  # np.array, with shape [time_slots, num-of-node] eg:(1440,256) 
+        "TrafficMonthlyInteraction": [], # np.array, With shape [month, num-of-node. num-of-node]
+        "StationInfo": [],  # list of [id, build-time, lat, lng, name], eg:['0', 0, 34.210542575000005, 108.91390095, 'grid_0']
         "POI": []
     },
     "Grid": {
