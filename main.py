@@ -31,7 +31,7 @@ def process():
 
     data = np.zeros(shape=(len(time_slots), len(bus_routes)), dtype=np.int32)
     
-    for _, row in tqdm(df.iterrows()):
+    for _, row in tqdm(df.iterrows(), total = len(df)):
         flow = row['ridership'] + row['transfers']
         time = row['transit_timestamp']
         time_idx = time_slot_map[time] 
