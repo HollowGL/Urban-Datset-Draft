@@ -1,3 +1,4 @@
+from datetime import datetime
 import pickle
 
 import numpy as np
@@ -22,15 +23,14 @@ def process():
      - ridership
      - transfers
     """
-    # df = df.iloc[:1000]
 
-    time_slots = df['transit_timestamp'].unique()
-    time_slot_map = {time: idx for idx, time in enumerate(time_slots)}
+    time_slots_12 = df['transit_timestamp'].unique()
+    time_slot_map = {time: idx for idx, time in enumerate(time_slots_12)}
     bus_routes = df['bus_route'].unique()
     bus_route_map = {route: idx for idx, route in enumerate(bus_routes)}
 
-    data = np.zeros(shape=(len(time_slots), len(bus_routes)), dtype=np.int32)
-    
+    data = np.zeros(shape=(len(time_slots_12), len(bus_routes)), dtype=np.int32)
+
     for _, row in tqdm(df.iterrows(), total = len(df)):
         flow = row['ridership'] + row['transfers']
         time = row['transit_timestamp']
@@ -39,19 +39,24 @@ def process():
         route_idx = bus_route_map[route]
         data[time_idx][route_idx] = flow
 
-
     result_df = pd.DataFrame(data, columns=bus_routes)
-    result_df.insert(0, 'time', time_slots)
-    
+
+    # Convert 12-hour to timestamp inorder to sort, then convert back to 24-hour
+    result_df.insert(0, 'time', time_slots_12)
+    timestamp = [pd.to_datetime(time, format='%m/%d/%Y %I:%M:%S %p').timestamp() for time in time_slots_12]
+    result_df['time'] = timestamp
+    result_df.sort_values(by=['time'], inplace=True)
+    time_slots_24 = [datetime.fromtimestamp(ts).strftime('%m/%d/%Y %H:%M:%S') for ts in timestamp]
+    result_df['time'] = time_slots_24
+
     # Save data as CSV
     result_df.to_csv('data.csv', index=False)
-        
-
+    # Save data as pickle
     DataFormat = {
         "TimeRange": ['2022-2-1', '2024-1-20'],    # 起止时间 str eg:['2016-10-01', '2016-11-30']
         "TimeFitness": 60,  # 时间粒度 int 单位为min
         "Node": {
-            "TrafficNode": data,  # np.array, with shape [time_slots, num-of-node] eg:(1440,256) 
+            "TrafficNode": result_df.values[:, 1:],  # np.array, with shape [time_slots, num-of-node] eg:(1440,256) 
             "TrafficMonthlyInteraction": [], # np.array, With shape [month, num-of-node. num-of-node]
             "StationInfo": [],  # list of [id, build-time, lat, lng, name], eg:['0', 0, 34.210542575000005, 108.91390095, 'grid_0']
             "POI": []
