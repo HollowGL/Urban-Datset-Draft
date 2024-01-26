@@ -1,3 +1,7 @@
 .DS_Store
 .ipynb_checkpoints/
 debug.log
+
+# debug file
+pre1_data.csv
+pre2_data.csv
